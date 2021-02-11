@@ -19,6 +19,7 @@ namespace api
     public class Startup
     {
         private readonly IConfiguration _config;
+        readonly string MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
         public Startup(IConfiguration config)
         {
             this._config = config;           
@@ -38,7 +39,14 @@ namespace api
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "api", Version = "v1" });
             });
-            services.AddCors();
+            services.AddCors(options =>
+        {
+            options.AddPolicy(name: MyAllowSpecificOrigins,
+                              builder =>
+                              {
+                                  builder.WithOrigins("https://localhost:4200");
+                              });
+        });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -51,11 +59,12 @@ namespace api
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "api v1"));
             }
 
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
 
             app.UseRouting();
 
-            app.UseCors(x => x.AllowAnyHeader().AllowAnyMethod().WithOrigins("http://localhost:4200/"));
+            //app.UseCors(x => x.AllowAnyHeader().AllowAnyMethod().WithOrigins("http://localhost:4200"));
+            app.UseCors(MyAllowSpecificOrigins);
 
             app.UseAuthorization();
 
